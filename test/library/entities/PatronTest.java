@@ -31,11 +31,11 @@ class PatronTest {
     @Test
     void testPatronCanTakeOutLoan() {
         // arrange
-        patron.allowBorrowing();        
+             
         // act
-
+        boolean result = patron.hasOverDueLoans();
         // assert
-        
+        assertFalse(result);
     }
 
 }
