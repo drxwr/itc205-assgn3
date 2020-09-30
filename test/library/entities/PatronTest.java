@@ -40,22 +40,10 @@ class PatronTest {
     }
 
     @Test
-    void testPatronCanTakeOutLoan() {
+    void testHasNoOverDueLoans() {
     	
         // arrange
         when(loan.isOverDue()).thenReturn(false);
-        boolean expected = true;
-        // act
-        boolean result = patron.hasOverDueLoans();
-        // assert
-        assertEquals(expected, result);
-    }
-    
-    @Test
-    void testPatronCannotTakeOutLoanWithOverdueItem() {
-    	
-        // arrange
-        when(loan.isOverDue()).thenReturn(true);
         boolean expected = false;
         // act
         boolean result = patron.hasOverDueLoans();
@@ -64,13 +52,57 @@ class PatronTest {
     }
     
     @Test
-    void testTakeoutLoan() {
+    void testHasOverdueLoans() {
     	
         // arrange
-    	
+        when(loan.isOverDue()).thenReturn(true);
+        boolean expected = true;
         // act
-    	patron.takeOutLoan(loan);
+        boolean result = patron.hasOverDueLoans();
         // assert
+        assertEquals(expected, result);
+    }
+    
+    @Test
+    void testCannotTakeoutLoanWhenRestricted() {
+    	
+        // arrange
+    	patron.restrictBorrowing();
+        
+    	// act
+    	
+	    Exception exception = assertThrows(RuntimeException.class, () -> {
+	    	patron.takeOutLoan(loan);
+	    });
+
+        //  assert
+	    
+	    String expectedMessage = "Patron cannot borrow in RESTRICTED state";
+	    String actualMessage = exception.getMessage();
+	 
+	    assertTrue(actualMessage.contains(expectedMessage));
+
+    }
+    
+    @Test
+    void testTakeoutDuplicateLoan() {
+    	
+        // arrange
+    	patron.takeOutLoan(loan);
+        
+    	// act
+    	
+	    Exception exception = assertThrows(RuntimeException.class, () -> {
+	    	patron.takeOutLoan(loan);
+	    });
+
+        //  assert
+	    
+	    String expectedMessage = "Attempted to add duplicate loan to patron";
+	    String actualMessage = exception.getMessage();
+	 
+	    assertTrue(actualMessage.contains(expectedMessage));
+   	
     	
     }
 
