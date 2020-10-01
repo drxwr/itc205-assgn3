@@ -21,7 +21,7 @@ import library.borrowbook.IBorrowBookUI;
 class TestBorrowBookControl {
 
 	@Mock ILibrary library;
-	@Mock IPatron patron;
+	//@Mock IPatron patron;
 		
 	@InjectMocks BorrowBookControl borrowBookControl = new BorrowBookControl(library);
 	@InjectMocks IBorrowBookUI borrowBookUI = new BorrowBookUI(borrowBookControl);
@@ -36,16 +36,21 @@ class TestBorrowBookControl {
 	}
 
 	@Test
-	void testCardSwiped() {
+	void testCardSwipedWithNullPatron() {
 
 		// arrange
-		when(library.getPatronById(0)).thenReturn(patron);
-		when(library.patronCanBorrow(patron)).thenReturn(true);
+		when(library.getPatronById(0)).thenReturn(null);
+
 		// act
-		borrowBookControl.cardSwiped(0);
-		
-		// assert
-		verify(borrowBookUI, times(1)).setScanning();
+		Exception exception = assertThrows(RuntimeException.class, () -> {
+			borrowBookControl.cardSwiped(0);
+	    });
+
+        //  assert
+	    String expectedMessage = "Invalid patronId";
+	    String actualMessage = exception.getMessage();
+	 
+	    assertTrue(actualMessage.contains(expectedMessage));
 		
 	}
 
