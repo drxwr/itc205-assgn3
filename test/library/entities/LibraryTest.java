@@ -36,7 +36,7 @@ class LibraryTest {
     @Mock IPatronHelper patronHelper;
     @Mock ILoanHelper loanHelper;
     
-    @Mock ILibrary mockLibrary = new Library(bookHelper, patronHelper, loanHelper); 
+    //Library mockLibrary = new Library(bookHelper, patronHelper, loanHelper); 
     
     ILibrary library;
     
@@ -140,10 +140,10 @@ class LibraryTest {
         mockLoan = new Loan(book, patron);
         
         // action
-        mockLibrary.commitLoan(mockLoan);
+        library.commitLoan(mockLoan);
         
         // verify
-        verify(mockLibrary, times(1)).commitLoan(mockLoan);
+        assertTrue(library.getCurrentLoansList().size() == 1);
         
     }
     
