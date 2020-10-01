@@ -30,9 +30,7 @@ class LoanTest {
 
     @Mock IBook book;
     @Mock IPatron patron;
-    
-    ILoanHelper loanHelper;
-    
+
     @Spy
     @InjectMocks ILoan loan = new Loan(book, patron);
     
@@ -41,10 +39,8 @@ class LoanTest {
     void setUp() throws Exception {
     	
     	MockitoAnnotations.initMocks(this);
-    	//book = new Book("author","title","callNo",1);
-    	//patron = new Patron("lastName","firstName","email",12345678,1);
-    }
 
+    }
 
 
     @Test
