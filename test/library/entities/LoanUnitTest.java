@@ -26,7 +26,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import library.entities.helpers.*;
 
 @ExtendWith(MockitoExtension.class)
-class LoanTest {
+class LoanUnitTest {
 
     @Mock IBook book;
     @Mock IPatron patron;
@@ -57,6 +57,7 @@ class LoanTest {
         verify(patron, times(1)).takeOutLoan(loan);
         
     }
+    
     
     @Test
     void testLoanCommitWhenLoanNotInPendingState() {

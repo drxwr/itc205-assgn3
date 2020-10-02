@@ -17,7 +17,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import library.entities.helpers.*;
 
-class BookTest {
+class BookUnitTest {
 	
 	@Mock IBook book;
 	@Mock BookHelper bookHelper;

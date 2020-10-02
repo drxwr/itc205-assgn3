@@ -1,49 +1,53 @@
 package library.entities;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.Mockito.when;
 
-import org.junit.jupiter.api.AfterAll;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+
 import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import static org.mockito.Mockito.*;
-
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
-import org.mockito.junit.jupiter.MockitoExtension;
-
-import library.entities.IPatron.PatronState;
-import library.entities.helpers.*;
-
-class PatronTest {
-
+class PatronIntegrationTest {
+	
+	String author = "author";
+	String title = "title";
+	String callNo = "callNo";
+	int bookId = 1;
+	
 	String lastName = "lastName";
 	String firstName = "firstName";
 	String email = "email";
 	long phoneNo = 123456789;
-	int id = 1;
+	int patronId = 1;
 	
-	@Mock IPatron patron;
-	@Mock ILoan loan;
 	
-	PatronHelper patronHelper;
+	IPatron patron;
+	ILoan loan;
+	IBook book;
+	
 
-    @BeforeEach
-    void setUp() throws Exception {
-    	
-    	MockitoAnnotations.initMocks(this);
-        patron = new Patron(lastName, firstName, email, phoneNo, id);
-    	//patron = patronHelper.makePatron("a","b","ab@localhost",12345678,1);
-    }
+	@BeforeEach
+	void setUp() throws Exception {
+		
+		patron = new Patron(lastName, firstName, email, phoneNo, patronId);
+		book = new Book(author, title, callNo, bookId);
+		loan = new Loan(book, patron);
+		
+	}
+
+	@AfterEach
+	void tearDown() throws Exception {
+	}
+
 
     @Test
     void testHasNoOverDueLoans() {
     	
         // arrange
-        when(loan.isOverDue()).thenReturn(false);
         boolean expected = false;
         // act
         boolean result = patron.hasOverDueLoans();
@@ -52,16 +56,24 @@ class PatronTest {
     }
     
     @Test
-    void testHasOverdueLoans() {
+    void testHasOverdueLoans() throws ParseException {
     	
         // arrange
-        when(loan.isOverDue()).thenReturn(true);
-        boolean expected = true;
+    	boolean expected = true;
+    	
+    	SimpleDateFormat dateformat2 = new SimpleDateFormat("dd-M-yyyy hh:mm:ss");
+    	String strDueDate = "01-01-2020 01:00:00";
+    	Date dueDate = dateformat2.parse(strDueDate);
+    	 
+    	loan.commit(1, dueDate);
+    	
         // act
         boolean result = patron.hasOverDueLoans();
+        
         // assert
         assertEquals(expected, result);
     }
+    
     
     @Test
     void testCannotTakeoutLoanWhenRestricted() {
@@ -84,6 +96,7 @@ class PatronTest {
 
     }
     
+    
     @Test
     void testTakeoutDuplicateLoan() {
     	
@@ -105,5 +118,8 @@ class PatronTest {
    	
     	
     }
-
+    
+    
+    
+    
 }

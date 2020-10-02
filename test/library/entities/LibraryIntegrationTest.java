@@ -1,59 +1,61 @@
 package library.entities;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.Mockito.when;
 
-import org.junit.jupiter.api.AfterAll;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+
 import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-
-
-import static org.mockito.Mockito.*;
-
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
-import org.mockito.junit.jupiter.MockitoExtension;
 
 import library.entities.helpers.BookHelper;
 import library.entities.helpers.IBookHelper;
 import library.entities.helpers.ILoanHelper;
-import library.entities.helpers.IPatronHelper;
 import library.entities.helpers.LoanHelper;
 import library.entities.helpers.PatronHelper;
 
-@ExtendWith(MockitoExtension.class)
-class LibraryTest {
-    
-    @Mock IPatron patron;
-    @Mock IBook book;
-    @Mock ILoan mockLoan;
-    
-    
-    @Mock IBookHelper bookHelper;
-    @Mock IPatronHelper patronHelper;
-    @Mock ILoanHelper loanHelper;
-    
-    //Library mockLibrary = new Library(bookHelper, patronHelper, loanHelper); 
-    
-    ILibrary library;
-    
+class LibraryIntegrationTest {
+	
 
-    @BeforeEach
-    void setUp() throws Exception {
+	String author = "author";
+	String title = "title";
+	String callNo = "callNo";
+	int bookId = 1;
+	
+	String lastName = "lastName";
+	String firstName = "firstName";
+	String email = "email";
+	long phoneNo = 123456789;
+	int patronId = 1;
+	
+	
+	ILibrary library;
+	IPatron patron;
+	ILoan loan;
+	IBook book;
+	
+	BookHelper bookHelper;
+	LoanHelper loanHelper;
+	
 
-        MockitoAnnotations.initMocks(this);
-        library = new Library(new BookHelper(), new PatronHelper(), new LoanHelper());
+	@BeforeEach
+	void setUp() throws Exception {
+		
+		library = new Library(new BookHelper(), new PatronHelper(), new LoanHelper());
+		patron = new Patron(lastName, firstName, email, phoneNo, patronId);
+		book = new Book(author, title, callNo, bookId);
+		loan = new Loan(book,patron);
+		
+	}
 
-    }
+	@AfterEach
+	void tearDown() throws Exception {
+	}
 
-    @AfterEach
-    void tearDown() throws Exception {
-    }
-
-    @Test
+	@Test
     void testPatronCanBorrow() {
         // arrange        
         boolean expected = true;        
@@ -62,28 +64,27 @@ class LibraryTest {
         // assert
         assertEquals(actual, expected);
     }
-
+	
+	
     @Test
     void testPatronCanBorrowWhenAtLoanLimit() {
 
-        // arrange        
-        boolean expected = false;
-        when(patron.getNumberOfCurrentLoans()).thenReturn(ILibrary.LOAN_LIMIT);
+        // arrange
+    	boolean expected = false;
+    	
+    	IBook book1 = new Book(author, title, callNo, bookId);
+    	IBook book2 = new Book(author, title, callNo, bookId + 1);
         
-        // action
-        boolean actual = library.patronCanBorrow(patron);
-
-        // assert
-        assertEquals(actual, expected);
-    }
-    
-    @Test
-    void testPatronCanBorrowWhenOverLoanLimit() {
-
-        // arrange        
-        boolean expected = false;
-        when(patron.getNumberOfCurrentLoans()).thenReturn(ILibrary.LOAN_LIMIT + 1);
+    	ILoan loan1 = new Loan(book1, patron);
+    	ILoan loan2 = new Loan(book2, patron);
         
+    	library.issueLoan(book1, patron);
+    	library.commitLoan(loan1);
+    	library.issueLoan(book2, patron);
+    	library.commitLoan(loan2);
+    	
+    	assertTrue(patron.getNumberOfCurrentLoans() == 2);
+    	
         // action
         boolean actual = library.patronCanBorrow(patron);
 
@@ -96,8 +97,8 @@ class LibraryTest {
 
         // arrange        
         boolean expected = false;
-        when(patron.getFinesPayable()).thenReturn(ILibrary.MAX_FINES_OWED);
-        
+        patron.incurFine(5.0);
+                
         // action
         boolean actual = library.patronCanBorrow(patron);
 
@@ -105,20 +106,25 @@ class LibraryTest {
         assertEquals(actual, expected);
     }
     
-    
     @Test
-    void testPatronCanBorrowWhenOverdueLoans() {
+    void testPatronCanBorrowWhenOverdueLoans() throws ParseException {
 
         // arrange        
         boolean expected = false;
-        when(patron.hasOverDueLoans()).thenReturn(true);
-        
+    	
+    	SimpleDateFormat dateformat2 = new SimpleDateFormat("dd-M-yyyy hh:mm:ss");
+    	String strDueDate = "01-01-2020 01:00:00";
+    	Date dueDate = dateformat2.parse(strDueDate);
+    	 
+    	loan.commit(1, dueDate);
+               
         // action
         boolean actual = library.patronCanBorrow(patron);
 
         // assert
         assertEquals(actual, expected);
     }
+    
     
     
     @Test
@@ -137,15 +143,15 @@ class LibraryTest {
     void testCommitLoan() {
         
         // arrange
-        mockLoan = new Loan(book, patron);
+        loan = new Loan(book, patron);
         
         // action
-        library.commitLoan(mockLoan);
+        library.commitLoan(loan);
         
         // verify
         assertTrue(library.getCurrentLoansList().size() == 1);
         
     }
-    
-    
+
 }
+
